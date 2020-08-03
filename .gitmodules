@@ -1,0 +1,3 @@
+[submodule "core/lwip"]
+	path = core/lwip
+	url = https://github.com/eycorsican/lwip-tun2socks.git

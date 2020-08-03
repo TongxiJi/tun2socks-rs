@@ -1,0 +1,1 @@
+cargo build && sudo RUSTFLAGS="-g" RUST_BACKTRACE=1 RUST_LOG=debug rust-lldb -- target/debug/tun2socks --proxy-server 10.0.0.104:1080

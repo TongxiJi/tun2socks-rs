@@ -1,0 +1,1 @@
+cargo build && sudo RUST_BACKTRACE=1 RUST_LOG=debug cargo run -- --proxy-server 10.0.0.104:1080
