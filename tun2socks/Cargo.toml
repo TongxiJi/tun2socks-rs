@@ -16,6 +16,12 @@ env_logger = "0.7"
 tun = { git = "https://github.com/eycorsican/rust-tun.git", branch = "codecfix", features = ["async"] }
 core = { path = "../core" }
 
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = 'abort'
+
 [profile.dev]
 opt-level = 0
 debug = true
