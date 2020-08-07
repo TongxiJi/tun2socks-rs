@@ -167,7 +167,6 @@ impl NetStack {
                         }
                     };
 
-                    // FIXME tcp stream is dropped after split
                     let (mut recv_half, mut send_half) = dg.split();
 
                     let (mut u_tx, mut u_rx) = tokio::sync::mpsc::channel(100);

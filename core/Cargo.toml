@@ -13,7 +13,7 @@ env_logger = "0.7"
 futures = "0.3"
 futures-util = "0.3"
 tokio = { version = "0.2", features = ["full"] }
-async-socks5 = { git = "https://github.com/eycorsican/async-socks5", branch = "master" }
+async-socks5 = "0.3"
 
 [build-dependencies]
 cc = "1.0"
