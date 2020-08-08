@@ -22,6 +22,7 @@ use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::{TcpStream, ToSocketAddrs, UdpSocket};
 
 use crate::*;
+use ilog::*;
 use lwip::*;
 use output::*;
 use tcp::*;
@@ -83,20 +84,20 @@ impl NetStack {
             let mut listener = TcpListener::new(lwip_locktcp);
 
             while let Some(mut stream) = listener.next().await {
-                info!(
+                ilog(format!(
                     "tcp {}:{} -> {}:{}",
                     stream.local_addr().ip(),
                     stream.local_addr().port(),
                     stream.remote_addr().ip(),
                     stream.remote_addr().port()
-                );
+                ));
                 tokio::spawn(async move {
                     match TcpStream::connect(proxy_addr).await {
                         Ok(mut socks_stream) => {
                             if let Err(err) =
                                 connect(&mut socks_stream, stream.remote_addr().clone(), None).await
                             {
-                                warn!("socks5 connect failed {:?}", err);
+                                ilog(format!("socks5 connect failed {:?}", err));
                                 return;
                             }
                             let mut stream = EventedTcpStream::new(stream);
@@ -109,12 +110,12 @@ impl NetStack {
                             let l2r = tokio::io::copy(&mut buf_lr, &mut rw);
 
                             tokio::select! {
-                                r1 = r2l => debug!("r2l done {:?}", r1),
-                                r2 = l2r => debug!("l2r done {:?}", r2),
+                                r1 = r2l => ilog(format!("r2l done {:?}", r1)),
+                                r2 = l2r => ilog(format!("l2r done {:?}", r2)),
                             }
                         }
                         Err(err) => {
-                            warn!("connect proxy failed {:?}", err);
+                            ilog(format!("connect proxy failed {:?}", err));
                             return;
                         }
                     }
@@ -129,26 +130,26 @@ impl NetStack {
                 let src_addr = ri.src_addr.clone();
                 let map = ri.map.clone();
                 if !map.lock().await.contains_key(&src_addr) {
-                    info!(
+                    ilog(format!(
                         "udp {}:{} -> {}:{}",
                         ri.src_addr.ip(),
                         ri.src_addr.port(),
                         ri.dest_addr.ip(),
                         ri.dest_addr.port()
-                    );
+                    ));
 
                     let any_addr = SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), 0);
                     let stream = match TcpStream::connect(proxy_addr).await {
                         Ok(stream) => stream,
                         Err(err) => {
-                            warn!("connect proxy failed {:?}", err);
+                            ilog(format!("connect proxy failed {:?}", err));
                             continue;
                         }
                     };
                     let mut socket = match UdpSocket::bind("0.0.0.0:0").await {
                         Ok(mut socket) => socket,
                         Err(err) => {
-                            warn!("bind udp failed: {:?}", err);
+                            ilog(format!("bind udp failed: {:?}", err));
                             continue;
                         }
                     };
@@ -162,7 +163,7 @@ impl NetStack {
                     {
                         Ok(mut dg) => dg,
                         Err(err) => {
-                            warn!("socks5 udp associate failed: {:?}", err);
+                            ilog(format!("socks5 udp associate failed: {:?}", err));
                             continue;
                         }
                     };
@@ -203,7 +204,7 @@ impl NetStack {
                         loop {
                             match recv_half.recv_from(&mut buf).await {
                                 Ok((0, _)) => {
-                                    warn!("recv_from remote end");
+                                    ilog(format!("recv_from remote end"));
                                     break;
                                 }
                                 Ok((n, addr)) => unsafe {
@@ -231,7 +232,7 @@ impl NetStack {
                                     lwip_lock.store(false, Ordering::Release);
                                 },
                                 Err(err) => {
-                                    warn!("recv_from remote {:?}", err);
+                                    ilog(format!("recv_from remote {:?}", err));
                                     break;
                                 }
                             }
@@ -245,12 +246,12 @@ impl NetStack {
                         while let Some(pkt) = u_rx.recv().await {
                             match send_half.send_to(pkt.data.as_ref(), pkt.addr).await {
                                 Ok(0) => {
-                                    warn!("send to remote 0 len");
+                                    ilog(format!("send to remote 0 len"));
                                     break;
                                 }
                                 Ok(n) => {}
                                 Err(err) => {
-                                    warn!("send to remote {:?}", err);
+                                    ilog(format!("send to remote {:?}", err));
                                     break;
                                 }
                             }

@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["ghost <noreply>"]
 edition = "2018"
 
+[lib]
+name = "tun2socks"
+crate-type = ["staticlib", "cdylib"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -13,7 +17,7 @@ tokio = { version = "0.2", features = ["full"] }
 log = "0.4"
 env_logger = "0.7"
 # tun = { version = "0.5", features = ["async"] }
-tun = { git = "https://github.com/eycorsican/rust-tun.git", branch = "codecfix", features = ["async"] }
+tun = { git = "https://github.com/eycorsican/rust-tun.git", branch = "ios", features = ["async"] }
 core = { path = "../core" }
 
 [profile.release]
